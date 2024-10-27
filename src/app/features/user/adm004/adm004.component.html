@@ -1,0 +1,357 @@
+<main>
+  <app-header></app-header>
+  <div class="container">
+    <!-- Content -->
+    <div class="content">
+      <div class="content-main">
+        <div class="row">
+          <form class="c-form box-shadow" #form="ngForm" novalidate>
+            <ul>
+              <li class="title">会員情報編集</li>
+              <!-- Vùng hiển thị lỗi chung nếu có lỗi form -->
+
+              <li class="box-err" *ngIf="!form.valid && form.submitted">
+                <div class="box-err-content">
+                  全ての必須項目を入力してください。
+                </div>
+              </li>
+
+              <!-- Account Name -->
+              <li class="form-group row d-flex">
+                <label class="col-form-label col-sm-2"><i class="relative">アカウント氏名:<span
+                      class="note-red">*</span></i></label>
+                <div class="col-sm col-sm-10">
+                  <input title="account name" type="text" class="form-control" [(ngModel)]="formData.employeeLoginId"
+                    name="employeeLoginId" required pattern="^[a-zA-Z_][a-zA-Z0-9_]*$" #employeeLoginId="ngModel" />
+
+                  <!-- Hiển thị lỗi -->
+                  <div *ngIf="employeeLoginId.errors?.['required'] && (employeeLoginId.touched || form.submitted)"
+                    class="text-danger">
+                    アカウント氏名を入力してください。
+                  </div>
+                  <div *ngIf="employeeLoginId.errors?.['pattern'] && (employeeLoginId.touched || form.submitted)"
+                    class="text-danger">
+                    アカウント氏名は英数字と_のみを含み、最初の文字は数字ではありません。
+                  </div>
+                  <div *ngIf="
+                      employeeLoginId.value?.length > 50 &&
+                      (employeeLoginId.touched || form.submitted)
+                    " class="text-danger">
+                    アカウント氏名は50文字以内で入力してください。
+                  </div>
+                </div>
+              </li>
+
+              <!-- Group (グループ) -->
+              <li class="form-group row d-flex">
+                <label class="col-form-label col-sm-2"><i class="relative">グループ:<span
+                      class="note-red">*</span></i></label>
+                <div class="col-sm col-sm-10">
+                  <select title="Select a department" class="form-control" [(ngModel)]="formData.departmentId"
+                    name="departmentId" required #departmentId="ngModel">
+                    <option value="">選択してください</option>
+                    <option *ngFor="let department of departments" [value]="department.departmentId">
+                      {{ department.departmentName }}
+                    </option>
+                  </select>
+                  <!-- Hiển thị lỗi nếu không chọn グループ -->
+                  <div *ngIf="departmentId.errors?.['required'] && (departmentId.touched || form.submitted)"
+                    class="text-danger">
+                    グループを選択してください。
+                  </div>
+                </div>
+              </li>
+
+              <!-- Full Name (氏名) -->
+              <li class="form-group row d-flex">
+                <label class="col-form-label col-sm-2"><i class="relative">氏名:<span class="note-red">*</span></i>
+                </label>
+                <div class="col-sm col-sm-10">
+                  <input title="fullname" type="text" class="form-control" [(ngModel)]="formData.employeeName"
+                    name="employeeName" required #employeeName="ngModel" />
+                  <div *ngIf="employeeName.errors?.['required'] && (employeeName.touched || form.submitted)"
+                    class="text-danger">
+                    氏名を入力してください。
+                  </div>
+                  <div *ngIf="
+                      employeeName.value?.length > 125 &&
+                      (employeeName.touched || form.submitted)
+                    " class="text-danger">
+                    氏名は125文字以内で入力してください。
+                  </div>
+                </div>
+              </li>
+
+              <!-- Katakana Name (カタカナ氏名) -->
+              <li class="form-group row d-flex">
+                <label class="col-form-label col-sm-2"><i class="relative">カタカナ氏名:<span class="note-red">*</span></i>
+                </label>
+                <div class="col-sm col-sm-10">
+                  <input title="Katakana" type="text" class="form-control" [(ngModel)]="formData.employeeNameKaTa"
+                    name="employeeNameKaTa" required pattern="^[ｦ-ﾟ]+$" #employeeNameKaTa="ngModel" />
+                  <div *ngIf="employeeNameKaTa.errors?.['required'] && (employeeNameKaTa.touched || form.submitted)"
+                    class="text-danger">
+                    カタカナ氏名を入力してください。
+                  </div>
+                  <div *ngIf="
+                      employeeNameKaTa.value?.length > 125 &&
+                      (employeeNameKaTa.touched || form.submitted)
+                    " class="text-danger">
+                    カタカナ氏名は125文字以内で入力してください。
+                  </div>
+                  <div *ngIf="employeeNameKaTa.errors?.['pattern'] && (employeeNameKaTa.touched || form.submitted)"
+                    class="text-danger">
+                    カタカナ氏名を半角カタカナで入力してください。
+                  </div>
+                </div>
+              </li>
+
+              <!-- Birth date -->
+              <li class="form-group row d-flex">
+                <label class="col-form-label col-sm-2"><i class="relative">生年月日:<span
+                      class="note-red">*</span></i></label>
+                <div class="col-sm col-sm-10">
+                  <div class="input-group date datepicker">
+                    <!-- Input field with bsDatepicker and formatting options -->
+                    <input onkeydown="return false;" class="form-control" name="employeeBirthDate" type="text"
+                      bsDatepicker [(ngModel)]="formData.employeeBirthDate" [bsConfig]="{
+                        isAnimated: true,
+                        dateInputFormat: 'YYYY/MM/DD',
+                        adaptivePosition: true
+                      }" #dp="bsDatepicker" placeholder="yyyy/mm/dd" />
+
+                    <!-- Calendar Icon to toggle datepicker -->
+                    <span class="input-group-addon" (click)="dp.toggle()">
+                      <i class="glyphicon glyphicon-calendar"></i>
+                    </span>
+                  </div>
+                </div>
+              </li>
+
+              <!-- Email -->
+              <li class="form-group row d-flex">
+                <label class="col-form-label col-sm-2"><i class="relative">メールアドレス<span class="note-red">*</span></i>
+                </label>
+                <div class="col-sm col-sm-10">
+                  <input title="email" type="email" class="form-control" [(ngModel)]="formData.employeeEmail"
+                    name="employeeEmail" required pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}"
+                    #employeeEmail="ngModel" />
+                  <div *ngIf="employeeEmail.errors?.['required'] && (employeeEmail.touched || form.submitted)"
+                    class="text-danger">
+                    メールアドレスを入力してください。
+                  </div>
+                  <div *ngIf="employeeEmail.errors?.['pattern'] && (employeeEmail.touched || form.submitted)"
+                    class="text-danger">
+                    メールアドレスの形式が無効です。
+                  </div>
+                  <div *ngIf="
+                      employeeEmail.value?.length > 125 &&
+                      (employeeEmail.touched || form.submitted)
+                    " class="text-danger">
+                    メールアドレスは125文字以内で入力してください。
+                  </div>
+                </div>
+              </li>
+
+              <!-- Phone Number -->
+              <li class="form-group row d-flex">
+                <label class="col-form-label col-sm-2"><i class="relative">電話番号:<span class="note-red">*</span></i>
+                </label>
+                <div class="col-sm col-sm-10">
+                  <input title="phone" type="text" class="form-control" [(ngModel)]="formData.employeeTelephone"
+                    name="employeeTelephone" required pattern="^[0-9\-]+$" #employeeTelephone="ngModel" />
+                  <div *ngIf="employeeTelephone.errors?.['required'] && (employeeTelephone.touched || form.submitted)"
+                    class="text-danger">
+                    電話番号を入力してください。
+                  </div>
+                  <div *ngIf="employeeTelephone.errors?.['pattern'] && (employeeTelephone.touched || form.submitted)"
+                    class="text-danger">
+                    電話番号は半角数字で入力してください。
+                  </div>
+                  <div *ngIf="
+                      employeeTelephone.value?.length > 50 &&
+                      (employeeTelephone.touched || form.submitted)
+                    " class="text-danger">
+                    電話番号は50文字以内で入力してください。
+                  </div>
+                </div>
+              </li>
+
+              <!-- Password -->
+              <li class="form-group row d-flex">
+                <label class="col-form-label col-sm-2"><i class="relative">パスワード:<span class="note-red">*</span></i>
+                </label>
+                <div class="col-sm col-sm-10">
+                  <input title="password" type="password" class="form-control"
+                    [(ngModel)]="formData.employeeLoginPassword" name="employeeLoginPassword" minlength="8"
+                    [required]="!isEditMode" #employeeLoginPassword="ngModel" />
+                  <!-- Nếu không ở chế độ chỉnh sửa thì yêu cầu mật khẩu -->
+                  <div
+                    *ngIf="!isEditMode && employeeLoginPassword.errors?.['required'] && (employeeLoginPassword.touched || form.submitted)"
+                    class="text-danger">
+                    パスワードを入力してください。
+                  </div>
+                  <!-- Kiểm tra độ dài tối thiểu của mật khẩu -->
+                  <div
+                    *ngIf="employeeLoginPassword.errors?.['minlength'] && (employeeLoginPassword.touched || form.submitted)"
+                    class="text-danger">
+                    パスワードは8文字以上で入力してください。
+                  </div>
+                  <!-- Kiểm tra độ dài tối đa của mật khẩu -->
+                  <div *ngIf="
+                      employeeLoginPassword.value?.length > 50 &&
+                      (employeeLoginPassword.touched || form.submitted)
+                    " class="text-danger">
+                    パスワードは50文字以内で入力してください。
+                  </div>
+                </div>
+              </li>
+
+              <!-- Confirm Password -->
+              <li class="form-group row d-flex">
+                <label class="col-form-label col-sm-2"><i class="relative">パスワード（確認）:<span class="note-red">*</span></i>
+                </label>
+                <div class="col-sm col-sm-10">
+                  <input title="confirmPassword" type="password" class="form-control"
+                    [(ngModel)]="formData.confirmPassword" (ngModelChange)="checkPasswordsMatch()"
+                    name="confirmPassword" [required]="!isEditMode" minlength="8" maxlength="50"
+                    #confirmPassword="ngModel" />
+
+                  <!-- Yêu cầu nhập mật khẩu khi không ở chế độ chỉnh sửa -->
+                  <div
+                    *ngIf="!isEditMode && confirmPassword.errors?.['required'] && (confirmPassword.touched || form.submitted)"
+                    class="text-danger">
+                    パスワード（確認）を入力してください。
+                  </div>
+
+                  <!-- Hiển thị lỗi nếu mật khẩu xác nhận không khớp -->
+                  <div *ngIf="
+                      !passwordsMatch &&
+                      (confirmPassword.touched || confirmPassword.dirty)
+                    " class="text-danger">
+                    パスワード（確認）が一致しません。
+                  </div>
+                </div>
+              </li>
+
+              <li class="title mt-12"><a href="#!">日本語能力</a></li>
+
+              <!-- Japanese Level (資格) -->
+              <li class="form-group row d-flex">
+                <label class="col-form-label col-sm-2">資格:</label>
+                <div class="col-sm col-sm-10">
+                  <select title="certifications" class="form-control"
+                    [(ngModel)]="formData.certifications.certificationId" name="certificationId"
+                    (change)="onJapaneseLevelChange()">
+                    <option value="">選択してください</option>
+                    <option *ngFor="let cert of certifications" [value]="cert.certificationId">
+                      {{ cert.certificationName }}
+                    </option>
+                  </select>
+                </div>
+              </li>
+
+              <!-- Certification Date (資格交付日) -->
+              <li class="form-group row d-flex">
+                <label class="col-form-label col-sm-2">
+                  <i class="relative">資格交付日:<span class="note-red" *ngIf="!isDisabled">*</span></i>
+                </label>
+                <div class="col-sm col-sm-10 d-flex">
+                  <div class="input-group">
+                    <input onkeydown="return false;" class="form-control" name="certificationDate" type="text"
+                      bsDatepicker [bsConfig]="{
+                        isAnimated: true,
+                        dateInputFormat: 'YYYY/MM/DD',
+                        adaptivePosition: true
+                      }" [(ngModel)]="formData.certifications.certificationDate" [disabled]="isDisabled" required
+                      #certificationDate="ngModel" />
+
+                    <div class="input-group-append">
+                      <span class="input-group-text" (click)="dp.toggle()">
+                        <i class="glyphicon glyphicon-calendar"></i>
+                      </span>
+                    </div>
+                  </div>
+                  <div
+                    *ngIf="certificationDate.errors?.['required'] && (certificationDate.touched || form.submitted) && !isDisabled"
+                    class="text-danger">
+                    資格交付日を入力してください。
+                  </div>
+                </div>
+              </li>
+
+              <!-- Expiration Date (失効日) -->
+              <li class="form-group row d-flex">
+                <label class="col-form-label col-sm-2">
+                  <i class="relative">失効日:<span class="note-red" *ngIf="!isDisabled">*</span></i>
+                </label>
+                <div class="col-sm col-sm-10 d-flex">
+                  <div class="input-group">
+                    <input onkeydown="return false;" class="form-control" name="expirationDate" type="text" bsDatepicker
+                      [bsConfig]="{
+                        isAnimated: true,
+                        dateInputFormat: 'YYYY/MM/DD',
+                        adaptivePosition: true
+                      }" [(ngModel)]="formData.certifications.expirationDate" [disabled]="isDisabled" required
+                      (bsValueChange)="validateExpirationDate()" #expirationDate="ngModel" />
+
+                    <div class="input-group-append">
+                      <span class="input-group-text" (click)="dp.toggle()">
+                        <i class="glyphicon glyphicon-calendar"></i>
+                      </span>
+                    </div>
+                  </div>
+                  <div
+                    *ngIf="expirationDate.errors?.['required'] && (expirationDate.touched || form.submitted) && !isDisabled"
+                    class="text-danger">
+                    失効日を入力してください。
+                  </div>
+                  <div *ngIf="
+                      !isExpirationDateValid &&
+                      (expirationDate.touched || form.submitted) &&
+                      !isDisabled
+                    " class="text-danger">
+                    失効日は資格交付日より未来の日で入力してください。
+                  </div>
+                </div>
+              </li>
+              
+              <!-- Score (点数) -->
+              <li class="form-group row d-flex">
+                <label class="col-form-label col-sm-2"><i class="relative">点数:<span class="note-red"
+                      *ngIf="!isDisabled">*</span></i></label>
+                <div class="col-sm col-sm-10">
+                  <input title="score" type="text" class="form-control" [(ngModel)]="formData.certifications.score"
+                    name="score" [disabled]="isDisabled" required pattern="^[0-9]+$" #score="ngModel" />
+                  <div *ngIf="score.errors?.['required'] && (score.touched || form.submitted) && !isDisabled"
+                    class="text-danger">
+                    点数を入力してください。
+                  </div>
+                  <div *ngIf="score.errors?.['pattern'] && (score.touched || form.submitted)" class="text-danger">
+                    点数は半角数字で入力してください。
+                  </div>
+                </div>
+              </li>
+
+              <!-- Buttons -->
+              <li class="form-group row d-flex">
+                <div class="btn-group col-sm col-sm-10 ml">
+                  <button type="button" class="btn btn-primary btn-sm" (click)="onSubmit(form)">
+                    確認
+                  </button>
+                  <button type="button" class="btn btn-secondary btn-sm" (click)="onBack()">
+                    戻る
+                  </button>
+                </div>
+              </li>
+            </ul>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+  </div>
+
+  <app-footer></app-footer>
+</main>

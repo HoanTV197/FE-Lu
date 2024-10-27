@@ -1,0 +1,85 @@
+<main>
+    <div class="container">
+      <app-header></app-header> 
+  
+      <div class="content">
+        <div class="content-main">
+          <div class="row">
+            <form class="c-form box-shadow">
+              <ul class="show-data">
+                <li class="title">会員詳細</li>
+  
+                <!-- Hiển thị lỗi nếu có -->
+                <li *ngIf="errorMessage" class="alert alert-danger">
+                  {{ errorMessage }}
+                </li>
+  
+                <!-- Hiển thị chi tiết nhân viên nếu không có lỗi -->
+                <ng-container *ngIf="!errorMessage">
+                  <li class="form-group row d-flex">
+                    <label class="col-form-label col-sm-2">アカウント名</label>
+                    <div class="col-sm col-sm-10">{{ employeeData?.employeeLoginId }}</div>
+                  </li>
+                  <li class="form-group row d-flex">
+                    <label class="col-form-label col-sm-2">グループ</label>
+                    <div class="col-sm col-sm-10">{{ employeeData?.departmentName }}</div>
+                  </li>
+                  <li class="form-group row d-flex">
+                    <label class="col-form-label col-sm-2">氏名</label>
+                    <div class="col-sm col-sm-10">{{ employeeData?.employeeName }}</div>
+                  </li>
+                  <li class="form-group row d-flex">
+                    <label class="col-form-label col-sm-2">カタカナ氏名</label>
+                    <div class="col-sm col-sm-10">{{ employeeData?.employeeNameKana }}</div>
+                  </li>
+                  <li class="form-group row d-flex">
+                    <label class="col-form-label col-sm-2">生年月日</label>
+                    <div class="col-sm col-sm-10">{{ employeeData?.employeeBirthDate | date: 'yyyy/MM/dd' }}</div>
+                  </li>
+                  <li class="form-group row d-flex">
+                    <label class="col-form-label col-sm-2">メールアドレス</label>
+                    <div class="col-sm col-sm-10">{{ employeeData?.employeeEmail }}</div>
+                  </li>
+                  <li class="form-group row d-flex bor-none">
+                    <label class="col-form-label col-sm-2">電話番号</label>
+                    <div class="col-sm col-sm-10">{{ employeeData?.employeeTelephone }}</div>
+                  </li>
+  
+                  <li class="title mt-12"><a href="#!">日本語能力</a></li>
+  
+                  <!-- Kiểm tra nếu không có chứng chỉ thì hiển thị '無し' -->
+                  <li class="form-group row d-flex">
+                    <label class="col-form-label col-sm-2">資格</label>
+                    <div class="col-sm col-sm-10">{{ employeeData?.certifications?.length > 0 ? employeeData.certifications[0].certificationName : '無し' }}</div>
+                  </li>
+                  <li class="form-group row d-flex">
+                    <label class="col-form-label col-sm-2">資格交付日</label>
+                    <div class="col-sm col-sm-10">{{ employeeData?.certifications?.length > 0 ? (employeeData.certifications[0].startDate | date: 'yyyy/MM/dd') : '無し' }}</div>
+                  </li>
+                  <li class="form-group row d-flex">
+                    <label class="col-form-label col-sm-2">失効日</label>
+                    <div class="col-sm col-sm-10">{{ employeeData?.certifications?.length > 0 ? (employeeData.certifications[0].endDate | date: 'yyyy/MM/dd') : '無し' }}</div>
+                  </li>
+                  <li class="form-group row d-flex">
+                    <label class="col-form-label col-sm-2">点数</label>
+                    <div class="col-sm col-sm-10">{{ employeeData?.certifications?.length > 0 ? employeeData.certifications[0].score : '無し' }}</div>
+                  </li>
+  
+                  <!-- Buttons Section -->
+                  <li class="form-group row d-flex">
+                    <div class="btn-group col-sm col-sm-10 ml">
+                      <button type="button" class="btn btn-primary btn-sm" (click)="goToEditPage()">編集</button>
+                      <button type="button" class="btn btn-secondary btn-sm" (click)="confirmDelete()" >削除</button>
+                      <button type="button" class="btn btn-secondary btn-sm" (click)="goBack()">戻る</button>
+                    </div>
+                  </li>
+                </ng-container>
+              </ul>
+            </form>
+          </div>
+        </div>
+      </div>
+      <app-footer></app-footer> 
+    </div>
+  </main>
+  
