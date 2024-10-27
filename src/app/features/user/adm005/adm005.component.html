@@ -1,6 +1,6 @@
 <main>
   <div class="container">
-    <app-header></app-header> 
+    <app-header></app-header>
 
     <div class="content">
       <div class="content-main">
@@ -13,10 +13,9 @@
                 <p>入力された情報をＯＫボタンクリックでＤＢへ保存してください</p>
               </li>
               <!-- Vùng hiện thị lỗi -->
-<!-- Vùng hiển thị lỗi -->
-<li class="box-err" *ngIf="errorMessage">
-  <div class="box-err-content">{{ errorMessage }}</div>
-</li>
+              <li class="box-err" *ngIf="errorMessage">
+                <div class="box-err-content">{{ errorMessage }}</div>
+              </li>
 
               <!-- Account Information Section -->
               <li class="form-group row d-flex">
@@ -93,10 +92,6 @@
     </div>
 
     <!-- Footer Section -->
-    <footer class="footer">
-      <div class="content-main">
-        <p>Copyright ©　2010　ルビナソフトウエア株式会社. All rights reserved.</p>
-      </div>
-    </footer>
+    <app-footer></app-footer>
   </div>
 </main>

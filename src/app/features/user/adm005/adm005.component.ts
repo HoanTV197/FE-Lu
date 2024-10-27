@@ -54,7 +54,23 @@ export class Adm005Component implements OnInit {
         score: ''
       };
     }
-  
+    
+    const formatDate = (dateString: string | null | undefined): string => {
+      // Kiểm tra xem dateString có tồn tại và không rỗng
+      if (!dateString) {
+        return ''; // Trả về chuỗi rỗng nếu không có giá trị
+      }
+      
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) {
+        // Trả về chuỗi rỗng nếu dateString không hợp lệ
+        return '';
+      }
+      
+      return date.toISOString().split('T')[0]; // Chuyển thành yyyy-MM-dd
+    };
+    
+
     // Tạo payload chứa dữ liệu nhân viên
     const payload: EmployeePayload = {
       employeeLoginId: this.formData.employeeLoginId,
@@ -62,15 +78,15 @@ export class Adm005Component implements OnInit {
       ...(this.formData.employeeLoginPassword && { employeeLoginPassword: this.formData.employeeLoginPassword }),
       employeeName: this.formData.employeeName,
       employeeNameKana: this.formData.employeeNameKaTa,
-      employeeBirthDate: this.formData.employeeBirthDate.split('T')[0],
+      employeeBirthDate: formatDate(this.formData.employeeBirthDate),
       employeeEmail: this.formData.employeeEmail,
       employeeTelephone: this.formData.employeeTelephone,
       departmentId: this.formData.departmentId ? this.formData.departmentId.toString() : '',
       certifications: [
         {
           certificationId: this.formData.certifications.certificationId ? this.formData.certifications.certificationId.toString() : '',
-          certificationDate: this.formData.certifications.certificationDate,
-          expirationDate: this.formData.certifications.expirationDate,
+          certificationDate: formatDate(this.formData.certifications.certificationDate),
+          expirationDate: formatDate(this.formData.certifications.expirationDate),
           score: this.formData.certifications.score
         }
       ]

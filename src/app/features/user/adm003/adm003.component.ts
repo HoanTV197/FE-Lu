@@ -21,9 +21,7 @@ export class Adm003Component implements OnInit {
     private router: Router
   ) {}
 
-  /**
-   * 
-   */
+
   ngOnInit(): void {
     // Lấy employeeId từ service
     this.employeeId = this.dataTransferService.getEmployeeId();
@@ -68,6 +66,7 @@ export class Adm003Component implements OnInit {
         } else {
           this.errorMessage = ERROR_MESSAGES.UNKNOWN_ERROR;
         }
+        this.router.navigate(['**']);
       }
     });
   }
