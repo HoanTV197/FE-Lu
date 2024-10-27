@@ -108,25 +108,31 @@
 
               <!-- Birth date -->
               <li class="form-group row d-flex">
-                <label class="col-form-label col-sm-2"><i class="relative">生年月日:<span
-                      class="note-red">*</span></i></label>
+                <label class="col-form-label col-sm-2">
+                  <i class="relative">生年月日:<span class="note-red">*</span></i>
+                </label>
                 <div class="col-sm col-sm-10">
                   <div class="input-group date datepicker">
                     <!-- Input field with bsDatepicker and formatting options -->
                     <input onkeydown="return false;" class="form-control" name="employeeBirthDate" type="text"
-                      bsDatepicker [(ngModel)]="formData.employeeBirthDate" [bsConfig]="{
-                        isAnimated: true,
-                        dateInputFormat: 'YYYY/MM/DD',
-                        adaptivePosition: true
-                      }" #dp="bsDatepicker" placeholder="yyyy/mm/dd" />
+                      bsDatepicker [(ngModel)]="formData.employeeBirthDate" #employeeBirthDate="ngModel" [bsConfig]="{
+          isAnimated: true,
+          dateInputFormat: 'YYYY/MM/DD',
+          adaptivePosition: true
+        }" db="bsDatepicker" placeholder="yyyy/mm/dd" required #birthDatePicker="bsDatepicker" readonly />
 
-                    <!-- Calendar Icon to toggle datepicker -->
-                    <span class="input-group-addon" (click)="dp.toggle()">
+                    <span class="input-group-addon" (click)="birthDatePicker.toggle()">
                       <i class="glyphicon glyphicon-calendar"></i>
                     </span>
                   </div>
+                  <!-- Thông báo lỗi bắt buộc nhập -->
+                  <div *ngIf="employeeBirthDate.errors?.['required'] && (employeeBirthDate.touched || form.submitted)"
+                    class="text-danger">
+                    生年月日を入力してください。
+                  </div>
                 </div>
               </li>
+
 
               <!-- Email -->
               <li class="form-group row d-flex">
@@ -259,15 +265,14 @@
                 <div class="col-sm col-sm-10 d-flex">
                   <div class="input-group">
                     <input onkeydown="return false;" class="form-control" name="certificationDate" type="text"
-                      bsDatepicker [bsConfig]="{
-                        isAnimated: true,
-                        dateInputFormat: 'YYYY/MM/DD',
-                        adaptivePosition: true
-                      }" [(ngModel)]="formData.certifications.certificationDate" [disabled]="isDisabled" required
-                      #certificationDate="ngModel" />
-
+                      bsDatepicker [(ngModel)]="formData.certifications.certificationDate" [disabled]="isDisabled"
+                      required [bsConfig]="{
+          isAnimated: true,
+          dateInputFormat: 'YYYY/MM/DD',
+          adaptivePosition: true
+        }" #certificationDatePicker="bsDatepicker" #certificationDate="ngModel" readonly />
                     <div class="input-group-append">
-                      <span class="input-group-text" (click)="dp.toggle()">
+                      <span class="input-group-text" (click)="certificationDatePicker.toggle()">
                         <i class="glyphicon glyphicon-calendar"></i>
                       </span>
                     </div>
@@ -288,15 +293,14 @@
                 <div class="col-sm col-sm-10 d-flex">
                   <div class="input-group">
                     <input onkeydown="return false;" class="form-control" name="expirationDate" type="text" bsDatepicker
-                      [bsConfig]="{
-                        isAnimated: true,
-                        dateInputFormat: 'YYYY/MM/DD',
-                        adaptivePosition: true
-                      }" [(ngModel)]="formData.certifications.expirationDate" [disabled]="isDisabled" required
-                      (bsValueChange)="validateExpirationDate()" #expirationDate="ngModel" />
-
+                      [(ngModel)]="formData.certifications.expirationDate" [disabled]="isDisabled" required [bsConfig]="{
+          isAnimated: true,
+          dateInputFormat: 'YYYY/MM/DD',
+          adaptivePosition: true
+        }" (bsValueChange)="validateExpirationDate()" #expirationDatePicker="bsDatepicker" #expirationDate="ngModel"
+                      readonly />
                     <div class="input-group-append">
-                      <span class="input-group-text" (click)="dp.toggle()">
+                      <span class="input-group-text" (click)="expirationDatePicker.toggle()">
                         <i class="glyphicon glyphicon-calendar"></i>
                       </span>
                     </div>
@@ -306,16 +310,14 @@
                     class="text-danger">
                     失効日を入力してください。
                   </div>
-                  <div *ngIf="
-                      !isExpirationDateValid &&
-                      (expirationDate.touched || form.submitted) &&
-                      !isDisabled
-                    " class="text-danger">
+                  <div *ngIf="!isExpirationDateValid && (expirationDate.touched || form.submitted) && !isDisabled"
+                    class="text-danger">
                     失効日は資格交付日より未来の日で入力してください。
                   </div>
                 </div>
               </li>
-              
+
+
               <!-- Score (点数) -->
               <li class="form-group row d-flex">
                 <label class="col-form-label col-sm-2"><i class="relative">点数:<span class="note-red"

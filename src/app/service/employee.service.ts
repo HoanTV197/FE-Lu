@@ -11,18 +11,18 @@ import { EmployeePayload } from '../models/EmployeePayload.model';
 export class EmployeeService {
   private apiUrl = AppConstants.BASE_URL_API + "/employees"
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   getEmployees(limit: number, offset: number, employeeName: string, departmentId: string, sortEmployeeName: string, sortCertificationName: string, sortEndDate: string): Observable<any> {
     let apiUrl = `${this.apiUrl}?limit=${limit}&offset=${offset}`;
-  
+
     if (employeeName) {
       apiUrl += `&employeeName=${employeeName}`;
     }
     if (departmentId) {
       apiUrl += `&departmentId=${departmentId}`;
     }
-  
+
     apiUrl += `&ord_employee_name=${sortEmployeeName}&ord_certification_name=${sortCertificationName}&ord_end_date=${sortEndDate}`;
     console.log("API URL:", apiUrl);
     return this.http.get<any>(apiUrl);
@@ -37,11 +37,10 @@ export class EmployeeService {
   editEmployee(employeeId: string, employee: EmployeePayload): Observable<any> {
     return this.http.put<any>(`${this.apiUrl}/edit`, { ...employee, employeeId });
   }
-  
 
-  
+
   //Hàm gọi API để lấy thông tin chi tiết nhân viên 
-  getEmployeeDetail(employeeId: string): Observable<any>{
+  getEmployeeDetail(employeeId: string): Observable<any> {
     return this.http.get(`${this.apiUrl}/${employeeId}`);
   }
 
@@ -49,5 +48,5 @@ export class EmployeeService {
   deleteEmployee(employeeId: string): Observable<any> {
     return this.http.delete(`${this.apiUrl}/${employeeId}`);
   }
-  
+
 }
