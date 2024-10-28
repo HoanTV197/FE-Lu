@@ -1,0 +1,1733 @@
+
+File: .
+
+File: ./adm003
+
+File: ./adm003/adm003.component.css
+
+File: ./adm003/adm003.component.html
+<main>
+    <div class="container">
+      <app-header></app-header> 
+  
+      <div class="content">
+        <div class="content-main">
+          <div class="row">
+            <form class="c-form box-shadow">
+              <ul class="show-data">
+                <li class="title">会員詳細</li>
+  
+                <!-- Hiển thị lỗi nếu có -->
+                <li *ngIf="errorMessage" class="alert alert-danger">
+                  {{ errorMessage }}
+                </li>
+  
+                <!-- Hiển thị chi tiết nhân viên nếu không có lỗi -->
+                <ng-container *ngIf="!errorMessage">
+                  <li class="form-group row d-flex">
+                    <label class="col-form-label col-sm-2">アカウント名</label>
+                    <div class="col-sm col-sm-10">{{ employeeData?.employeeLoginId }}</div>
+                  </li>
+                  <li class="form-group row d-flex">
+                    <label class="col-form-label col-sm-2">グループ</label>
+                    <div class="col-sm col-sm-10">{{ employeeData?.departmentName }}</div>
+                  </li>
+                  <li class="form-group row d-flex">
+                    <label class="col-form-label col-sm-2">氏名</label>
+                    <div class="col-sm col-sm-10">{{ employeeData?.employeeName }}</div>
+                  </li>
+                  <li class="form-group row d-flex">
+                    <label class="col-form-label col-sm-2">カタカナ氏名</label>
+                    <div class="col-sm col-sm-10">{{ employeeData?.employeeNameKana }}</div>
+                  </li>
+                  <li class="form-group row d-flex">
+                    <label class="col-form-label col-sm-2">生年月日</label>
+                    <div class="col-sm col-sm-10">{{ employeeData?.employeeBirthDate | date: 'yyyy/MM/dd' }}</div>
+                  </li>
+                  <li class="form-group row d-flex">
+                    <label class="col-form-label col-sm-2">メールアドレス</label>
+                    <div class="col-sm col-sm-10">{{ employeeData?.employeeEmail }}</div>
+                  </li>
+                  <li class="form-group row d-flex bor-none">
+                    <label class="col-form-label col-sm-2">電話番号</label>
+                    <div class="col-sm col-sm-10">{{ employeeData?.employeeTelephone }}</div>
+                  </li>
+  
+                  <li class="title mt-12"><a href="#!">日本語能力</a></li>
+  
+                  <!-- Kiểm tra nếu không có chứng chỉ thì hiển thị '無し' -->
+                  <li class="form-group row d-flex">
+                    <label class="col-form-label col-sm-2">資格</label>
+                    <div class="col-sm col-sm-10">{{ employeeData?.certifications?.length > 0 ? employeeData.certifications[0].certificationName : '無し' }}</div>
+                  </li>
+                  <li class="form-group row d-flex">
+                    <label class="col-form-label col-sm-2">資格交付日</label>
+                    <div class="col-sm col-sm-10">{{ employeeData?.certifications?.length > 0 ? (employeeData.certifications[0].startDate | date: 'yyyy/MM/dd') : '無し' }}</div>
+                  </li>
+                  <li class="form-group row d-flex">
+                    <label class="col-form-label col-sm-2">失効日</label>
+                    <div class="col-sm col-sm-10">{{ employeeData?.certifications?.length > 0 ? (employeeData.certifications[0].endDate | date: 'yyyy/MM/dd') : '無し' }}</div>
+                  </li>
+                  <li class="form-group row d-flex">
+                    <label class="col-form-label col-sm-2">点数</label>
+                    <div class="col-sm col-sm-10">{{ employeeData?.certifications?.length > 0 ? employeeData.certifications[0].score : '無し' }}</div>
+                  </li>
+  
+                  <!-- Buttons Section -->
+                  <li class="form-group row d-flex">
+                    <div class="btn-group col-sm col-sm-10 ml">
+                      <button type="button" class="btn btn-primary btn-sm" (click)="goToEditPage()">編集</button>
+                      <button type="button" class="btn btn-secondary btn-sm" (click)="confirmDelete()" >削除</button>
+                      <button type="button" class="btn btn-secondary btn-sm" (click)="goBack()">戻る</button>
+                    </div>
+                  </li>
+                </ng-container>
+              </ul>
+            </form>
+          </div>
+        </div>
+      </div>
+      <app-footer></app-footer> 
+    </div>
+  </main>
+  
+File: ./adm003/adm003.component.spec.ts
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+
+import { Adm003Component } from './adm003.component';
+
+describe('Adm003Component', () => {
+  let component: Adm003Component;
+  let fixture: ComponentFixture<Adm003Component>;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      declarations: [ Adm003Component ]
+    })
+    .compileComponents();
+
+    fixture = TestBed.createComponent(Adm003Component);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
+});
+
+File: ./adm003/adm003.component.ts
+import { Component, OnInit } from '@angular/core';
+import { EmployeeService } from '../../../service/employee.service';
+import { ActivatedRoute, Router } from '@angular/router';
+import { DataTransferService } from '../../../service/DataTransfer.service';
+import { ERROR_MESSAGES } from '../../../../app/constants/contants';
+
+@Component({
+  selector: 'app-adm003',
+  templateUrl: './adm003.component.html',
+  styleUrls: ['./adm003.component.css']
+})
+export class Adm003Component implements OnInit {
+  employeeId: string | null = null;
+  employeeData: any = {};
+  errorMessage: string = '';
+
+  constructor(
+    private employeeService: EmployeeService,
+    private route: ActivatedRoute,
+    private dataTransferService: DataTransferService,
+    private router: Router
+  ) {}
+
+
+  ngOnInit(): void {
+    // Lấy employeeId từ service
+    this.employeeId = this.dataTransferService.getEmployeeId();
+
+    if (this.employeeId) {
+      // Lưu ID vào sessionStorage để phòng trường hợp reload lại trang
+      sessionStorage.setItem('employeeId', this.employeeId);
+      // Gọi API để lấy chi tiết nhân viên
+      this.getEmployeeDetail(this.employeeId);
+    } else {
+      // Nếu không có ID từ service, thử lấy từ sessionStorage
+      this.employeeId = sessionStorage.getItem('employeeId');
+      if (this.employeeId) {
+        console.log("Retrieved employeeId from sessionStorage:", this.employeeId);
+        // Gọi API để lấy chi tiết nhân viên
+        this.getEmployeeDetail(this.employeeId);
+      } else {
+        // Không có ID, chuyển về trang system error hoặc thông báo lỗi
+        this.errorMessage = 'Không tìm thấy ID nhân viên.';
+        this.router.navigate(['**']);
+        console.error('Không tìm thấy ID nhân viên.');
+      }
+    }
+  }
+
+    /**
+     * Hàm gọi API để lấy chi tiết nhân viên
+     * @param employeeId  
+     */
+  getEmployeeDetail(employeeId: string): void {
+    this.employeeService.getEmployeeDetail(employeeId).subscribe({
+      next: (response) => {
+        // Xử lý thành công
+        if (response.code === '200 OK') {
+          this.employeeData = response;
+        }
+      },
+      error: (error) => {
+        // Xử lý lỗi nếu nhân viên không tồn tại
+        if (error.status === 500 && error.error && error.error.message && error.error.message.code === '該当するユーザは存在していません。') {
+          this.errorMessage = ERROR_MESSAGES.GENERAL_ERROR;
+        } else {
+          this.errorMessage = ERROR_MESSAGES.UNKNOWN_ERROR;
+        }
+        this.router.navigate(['**']);
+      }
+    });
+  }
+
+  /**
+   * Xác nhận xóa nhân viên 
+   */
+  confirmDelete(): void {
+    const isConfirmed = confirm(ERROR_MESSAGES.CONFIRM_DELETE);
+    if (isConfirmed && this.employeeId) {
+      this.employeeService.deleteEmployee(this.employeeId).subscribe({
+        next: (response) => {
+          if (response.code === 200 && response.message && response.message.code) {
+            // Lưu messageCode vào DataTransferService
+            this.dataTransferService.setMessageCode(response.message.code);
+            // Điều hướng đến ADM006
+            this.router.navigate(['/user/message-success']);
+          }
+        },
+        error: (error) => {
+          // Nếu xảy ra lỗi, điều hướng đến trang system error
+          console.error('Error during delete:', error);
+          this.router.navigate(['**']);
+        }
+      });
+    }
+  }
+
+  // Hàm điều hướng tới màn hình edit adm004
+  goToEditPage(): void {
+    if (this.employeeId) {
+      // Lưu ID vào DataTransferService để truyền sang màn hình adm004
+      this.dataTransferService.setEmployeeId(this.employeeId);
+      // Điều hướng tới màn hình adm004
+      this.router.navigate(['/user/add']);
+    }
+  }
+  
+  /**
+   * Hàm quay lại adm002 - list user
+   */
+  goBack(): void {
+    this.router.navigate(['/user/list']);
+  }
+
+}
+
+File: ./adm004
+
+File: ./adm004/adm004.component.css
+.text-danger{
+color: red !important;
+}
+
+
+
+  
+
+  
+File: ./adm004/adm004.component.html
+<main>
+  <app-header></app-header>
+  <div class="container">
+    <!-- Content -->
+    <div class="content">
+      <div class="content-main">
+        <div class="row">
+          <form class="c-form box-shadow" #form="ngForm" novalidate>
+            <ul>
+              <li class="title">会員情報編集</li>
+              <!-- Vùng hiển thị lỗi chung nếu có lỗi form -->
+
+              <li class="box-err" *ngIf="!form.valid && form.submitted">
+                <div class="box-err-content">
+                  全ての必須項目を入力してください。
+                </div>
+              </li>
+
+              <!-- Account Name -->
+              <li class="form-group row d-flex">
+                <label class="col-form-label col-sm-2"><i class="relative">アカウント氏名:<span
+                      class="note-red">*</span></i></label>
+                <div class="col-sm col-sm-10">
+                  <input title="account name" type="text" class="form-control" [(ngModel)]="formData.employeeLoginId"
+                    name="employeeLoginId" required pattern="^[a-zA-Z_][a-zA-Z0-9_]*$" #employeeLoginId="ngModel" />
+
+                  <!-- Hiển thị lỗi -->
+                  <div *ngIf="employeeLoginId.errors?.['required'] && (employeeLoginId.touched || form.submitted)"
+                    class="text-danger">
+                    アカウント氏名を入力してください。
+                  </div>
+                  <div *ngIf="employeeLoginId.errors?.['pattern'] && (employeeLoginId.touched || form.submitted)"
+                    class="text-danger">
+                    アカウント氏名は英数字と_のみを含み、最初の文字は数字ではありません。
+                  </div>
+                  <div *ngIf="
+                      employeeLoginId.value?.length > 50 &&
+                      (employeeLoginId.touched || form.submitted)
+                    " class="text-danger">
+                    アカウント氏名は50文字以内で入力してください。
+                  </div>
+                </div>
+              </li>
+
+              <!-- Group (グループ) -->
+              <li class="form-group row d-flex">
+                <label class="col-form-label col-sm-2"><i class="relative">グループ:<span
+                      class="note-red">*</span></i></label>
+                <div class="col-sm col-sm-10">
+                  <select title="Select a department" class="form-control" [(ngModel)]="formData.departmentId"
+                    name="departmentId" required #departmentId="ngModel">
+                    <option value="">選択してください</option>
+                    <option *ngFor="let department of departments" [value]="department.departmentId">
+                      {{ department.departmentName }}
+                    </option>
+                  </select>
+                  <!-- Hiển thị lỗi nếu không chọn グループ -->
+                  <div *ngIf="departmentId.errors?.['required'] && (departmentId.touched || form.submitted)"
+                    class="text-danger">
+                    グループを選択してください。
+                  </div>
+                </div>
+              </li>
+
+              <!-- Full Name (氏名) -->
+              <li class="form-group row d-flex">
+                <label class="col-form-label col-sm-2"><i class="relative">氏名:<span class="note-red">*</span></i>
+                </label>
+                <div class="col-sm col-sm-10">
+                  <input title="fullname" type="text" class="form-control" [(ngModel)]="formData.employeeName"
+                    name="employeeName" required #employeeName="ngModel" />
+                  <div *ngIf="employeeName.errors?.['required'] && (employeeName.touched || form.submitted)"
+                    class="text-danger">
+                    氏名を入力してください。
+                  </div>
+                  <div *ngIf="
+                      employeeName.value?.length > 125 &&
+                      (employeeName.touched || form.submitted)
+                    " class="text-danger">
+                    氏名は125文字以内で入力してください。
+                  </div>
+                </div>
+              </li>
+
+              <!-- Katakana Name (カタカナ氏名) -->
+              <li class="form-group row d-flex">
+                <label class="col-form-label col-sm-2"><i class="relative">カタカナ氏名:<span class="note-red">*</span></i>
+                </label>
+                <div class="col-sm col-sm-10">
+                  <input title="Katakana" type="text" class="form-control" [(ngModel)]="formData.employeeNameKaTa"
+                    name="employeeNameKaTa" required pattern="^[ｦ-ﾟ]+$" #employeeNameKaTa="ngModel" />
+                  <div *ngIf="employeeNameKaTa.errors?.['required'] && (employeeNameKaTa.touched || form.submitted)"
+                    class="text-danger">
+                    カタカナ氏名を入力してください。
+                  </div>
+                  <div *ngIf="
+                      employeeNameKaTa.value?.length > 125 &&
+                      (employeeNameKaTa.touched || form.submitted)
+                    " class="text-danger">
+                    カタカナ氏名は125文字以内で入力してください。
+                  </div>
+                  <div *ngIf="employeeNameKaTa.errors?.['pattern'] && (employeeNameKaTa.touched || form.submitted)"
+                    class="text-danger">
+                    カタカナ氏名を半角カタカナで入力してください。
+                  </div>
+                </div>
+              </li>
+
+              <!-- Birth date -->
+              <li class="form-group row d-flex">
+                <label class="col-form-label col-sm-2">
+                  <i class="relative">生年月日:<span class="note-red">*</span></i>
+                </label>
+                <div class="col-sm col-sm-10">
+                  <div class="input-group date datepicker">
+                    <!-- Input field with bsDatepicker and formatting options -->
+                    <input onkeydown="return false;" class="form-control" name="employeeBirthDate" type="text"
+                      bsDatepicker [(ngModel)]="formData.employeeBirthDate" #employeeBirthDate="ngModel" [bsConfig]="{
+          isAnimated: true,
+          dateInputFormat: 'YYYY/MM/DD',
+          adaptivePosition: true
+        }" db="bsDatepicker" placeholder="yyyy/mm/dd" required #birthDatePicker="bsDatepicker" readonly />
+
+                    <span class="input-group-addon" (click)="birthDatePicker.toggle()">
+                      <i class="glyphicon glyphicon-calendar"></i>
+                    </span>
+                  </div>
+                  <!-- Thông báo lỗi bắt buộc nhập -->
+                  <div *ngIf="employeeBirthDate.errors?.['required'] && (employeeBirthDate.touched || form.submitted)"
+                    class="text-danger">
+                    生年月日を入力してください。
+                  </div>
+                </div>
+              </li>
+
+
+              <!-- Email -->
+              <li class="form-group row d-flex">
+                <label class="col-form-label col-sm-2"><i class="relative">メールアドレス<span class="note-red">*</span></i>
+                </label>
+                <div class="col-sm col-sm-10">
+                  <input title="email" type="email" class="form-control" [(ngModel)]="formData.employeeEmail"
+                    name="employeeEmail" required pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}"
+                    #employeeEmail="ngModel" />
+                  <div *ngIf="employeeEmail.errors?.['required'] && (employeeEmail.touched || form.submitted)"
+                    class="text-danger">
+                    メールアドレスを入力してください。
+                  </div>
+                  <div *ngIf="employeeEmail.errors?.['pattern'] && (employeeEmail.touched || form.submitted)"
+                    class="text-danger">
+                    メールアドレスの形式が無効です。
+                  </div>
+                  <div *ngIf="
+                      employeeEmail.value?.length > 125 &&
+                      (employeeEmail.touched || form.submitted)
+                    " class="text-danger">
+                    メールアドレスは125文字以内で入力してください。
+                  </div>
+                </div>
+              </li>
+
+              <!-- Phone Number -->
+              <li class="form-group row d-flex">
+                <label class="col-form-label col-sm-2"><i class="relative">電話番号:<span class="note-red">*</span></i>
+                </label>
+                <div class="col-sm col-sm-10">
+                  <input title="phone" type="text" class="form-control" [(ngModel)]="formData.employeeTelephone"
+                    name="employeeTelephone" required pattern="^[0-9\-]+$" #employeeTelephone="ngModel" />
+                  <div *ngIf="employeeTelephone.errors?.['required'] && (employeeTelephone.touched || form.submitted)"
+                    class="text-danger">
+                    電話番号を入力してください。
+                  </div>
+                  <div *ngIf="employeeTelephone.errors?.['pattern'] && (employeeTelephone.touched || form.submitted)"
+                    class="text-danger">
+                    電話番号は半角数字で入力してください。
+                  </div>
+                  <div *ngIf="
+                      employeeTelephone.value?.length > 50 &&
+                      (employeeTelephone.touched || form.submitted)
+                    " class="text-danger">
+                    電話番号は50文字以内で入力してください。
+                  </div>
+                </div>
+              </li>
+
+              <!-- Password -->
+              <li class="form-group row d-flex">
+                <label class="col-form-label col-sm-2"><i class="relative">パスワード:<span class="note-red">*</span></i>
+                </label>
+                <div class="col-sm col-sm-10">
+                  <input title="password" type="password" class="form-control"
+                    [(ngModel)]="formData.employeeLoginPassword" name="employeeLoginPassword" minlength="8"
+                    [required]="!isEditMode" #employeeLoginPassword="ngModel" />
+                  <!-- Nếu không ở chế độ chỉnh sửa thì yêu cầu mật khẩu -->
+                  <div
+                    *ngIf="!isEditMode && employeeLoginPassword.errors?.['required'] && (employeeLoginPassword.touched || form.submitted)"
+                    class="text-danger">
+                    パスワードを入力してください。
+                  </div>
+                  <!-- Kiểm tra độ dài tối thiểu của mật khẩu -->
+                  <div
+                    *ngIf="employeeLoginPassword.errors?.['minlength'] && (employeeLoginPassword.touched || form.submitted)"
+                    class="text-danger">
+                    パスワードは8文字以上で入力してください。
+                  </div>
+                  <!-- Kiểm tra độ dài tối đa của mật khẩu -->
+                  <div *ngIf="
+                      employeeLoginPassword.value?.length > 50 &&
+                      (employeeLoginPassword.touched || form.submitted)
+                    " class="text-danger">
+                    パスワードは50文字以内で入力してください。
+                  </div>
+                </div>
+              </li>
+
+              <!-- Confirm Password -->
+              <li class="form-group row d-flex">
+                <label class="col-form-label col-sm-2"><i class="relative">パスワード（確認）:<span class="note-red">*</span></i>
+                </label>
+                <div class="col-sm col-sm-10">
+                  <input title="confirmPassword" type="password" class="form-control"
+                    [(ngModel)]="formData.confirmPassword" (ngModelChange)="checkPasswordsMatch()"
+                    name="confirmPassword" [required]="!isEditMode" minlength="8" maxlength="50"
+                    #confirmPassword="ngModel" />
+
+                  <!-- Yêu cầu nhập mật khẩu khi không ở chế độ chỉnh sửa -->
+                  <div
+                    *ngIf="!isEditMode && confirmPassword.errors?.['required'] && (confirmPassword.touched || form.submitted)"
+                    class="text-danger">
+                    パスワード（確認）を入力してください。
+                  </div>
+
+                  <!-- Hiển thị lỗi nếu mật khẩu xác nhận không khớp -->
+                  <div *ngIf="
+                      !passwordsMatch &&
+                      (confirmPassword.touched || confirmPassword.dirty)
+                    " class="text-danger">
+                    パスワード（確認）が一致しません。
+                  </div>
+                </div>
+              </li>
+
+              <li class="title mt-12"><a href="#!">日本語能力</a></li>
+
+              <!-- Japanese Level (資格) -->
+              <li class="form-group row d-flex">
+                <label class="col-form-label col-sm-2">資格:</label>
+                <div class="col-sm col-sm-10">
+                  <select title="certifications" class="form-control"
+                    [(ngModel)]="formData.certifications.certificationId" name="certificationId"
+                    (change)="onJapaneseLevelChange()">
+                    <option value="">選択してください</option>
+                    <option *ngFor="let cert of certifications" [value]="cert.certificationId">
+                      {{ cert.certificationName }}
+                    </option>
+                  </select>
+                </div>
+              </li>
+
+              <!-- Certification Date (資格交付日) -->
+              <li class="form-group row d-flex">
+                <label class="col-form-label col-sm-2">
+                  <i class="relative">資格交付日:<span class="note-red" *ngIf="!isDisabled">*</span></i>
+                </label>
+                <div class="col-sm col-sm-10 d-flex">
+                  <div class="input-group">
+                    <input onkeydown="return false;" class="form-control" name="certificationDate" type="text"
+                      bsDatepicker [(ngModel)]="formData.certifications.certificationDate" [disabled]="isDisabled"
+                      required [bsConfig]="{
+          isAnimated: true,
+          dateInputFormat: 'YYYY/MM/DD',
+          adaptivePosition: true
+        }" #certificationDatePicker="bsDatepicker" #certificationDate="ngModel" readonly />
+                    <div class="input-group-append">
+                      <span class="input-group-text" (click)="certificationDatePicker.toggle()">
+                        <i class="glyphicon glyphicon-calendar"></i>
+                      </span>
+                    </div>
+                  </div>
+                  <div
+                    *ngIf="certificationDate.errors?.['required'] && (certificationDate.touched || form.submitted) && !isDisabled"
+                    class="text-danger">
+                    資格交付日を入力してください。
+                  </div>
+                </div>
+              </li>
+
+              <!-- Expiration Date (失効日) -->
+              <li class="form-group row d-flex">
+                <label class="col-form-label col-sm-2">
+                  <i class="relative">失効日:<span class="note-red" *ngIf="!isDisabled">*</span></i>
+                </label>
+                <div class="col-sm col-sm-10 d-flex">
+                  <div class="input-group">
+                    <input onkeydown="return false;" class="form-control" name="expirationDate" type="text" bsDatepicker
+                      [(ngModel)]="formData.certifications.expirationDate" [disabled]="isDisabled" required [bsConfig]="{
+          isAnimated: true,
+          dateInputFormat: 'YYYY/MM/DD',
+          adaptivePosition: true
+        }" (bsValueChange)="validateExpirationDate()" #expirationDatePicker="bsDatepicker" #expirationDate="ngModel"
+                      readonly />
+                    <div class="input-group-append">
+                      <span class="input-group-text" (click)="expirationDatePicker.toggle()">
+                        <i class="glyphicon glyphicon-calendar"></i>
+                      </span>
+                    </div>
+                  </div>
+                  <div
+                    *ngIf="expirationDate.errors?.['required'] && (expirationDate.touched || form.submitted) && !isDisabled"
+                    class="text-danger">
+                    失効日を入力してください。
+                  </div>
+                  <div *ngIf="!isExpirationDateValid && (expirationDate.touched || form.submitted) && !isDisabled"
+                    class="text-danger">
+                    失効日は資格交付日より未来の日で入力してください。
+                  </div>
+                </div>
+              </li>
+
+
+              <!-- Score (点数) -->
+              <li class="form-group row d-flex">
+                <label class="col-form-label col-sm-2"><i class="relative">点数:<span class="note-red"
+                      *ngIf="!isDisabled">*</span></i></label>
+                <div class="col-sm col-sm-10">
+                  <input title="score" type="text" class="form-control" [(ngModel)]="formData.certifications.score"
+                    name="score" [disabled]="isDisabled" required pattern="^[0-9]+$" #score="ngModel" />
+                  <div *ngIf="score.errors?.['required'] && (score.touched || form.submitted) && !isDisabled"
+                    class="text-danger">
+                    点数を入力してください。
+                  </div>
+                  <div *ngIf="score.errors?.['pattern'] && (score.touched || form.submitted)" class="text-danger">
+                    点数は半角数字で入力してください。
+                  </div>
+                </div>
+              </li>
+
+              <!-- Buttons -->
+              <li class="form-group row d-flex">
+                <div class="btn-group col-sm col-sm-10 ml">
+                  <button type="button" class="btn btn-primary btn-sm" (click)="onSubmit(form)">
+                    確認
+                  </button>
+                  <button type="button" class="btn btn-secondary btn-sm" (click)="onBack()">
+                    戻る
+                  </button>
+                </div>
+              </li>
+            </ul>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+  </div>
+
+  <app-footer></app-footer>
+</main>
+File: ./adm004/adm004.component.spec.ts
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+
+import { Adm004Component } from './adm004.component';
+
+describe('Adm004Component', () => {
+  let component: Adm004Component;
+  let fixture: ComponentFixture<Adm004Component>;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      declarations: [ Adm004Component ]
+    })
+    .compileComponents();
+
+    fixture = TestBed.createComponent(Adm004Component);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
+});
+
+File: ./adm004/adm004.component.ts
+import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
+import { DepartmentService } from '../../../service/department.service';
+import { CertificationService } from '../../../service/certification.service';
+import { EmployeeService } from '../../../service/employee.service';
+import { Department } from '../../../models/department.model';
+import { Certification } from '../../../models/certification.model';
+import { BsDatepickerConfig } from 'ngx-bootstrap/datepicker';
+import * as moment from 'moment'; // Sử dụng moment.js để so sánh ngày
+import { NgForm } from '@angular/forms';
+import * as $ from 'jquery';
+import 'jquery-ui-dist/jquery-ui';
+@Component({
+  selector: 'app-adm004',
+  templateUrl: './adm004.component.html',
+  styleUrls: ['./adm004.component.css']
+})
+export class Adm004Component implements OnInit {
+  // Dữ liệu form, chứa thông tin của nhân viên và chứng chỉ
+  formData = {
+    employeeLoginId: '',
+    departmentId: '',
+    employeeName: '',
+    employeeNameKaTa: '',
+    employeeBirthDate: '',
+    employeeEmail: '',
+    employeeTelephone: '',
+    employeeLoginPassword: '',
+    confirmPassword: '',
+    certifications: {
+      certificationId: '',
+      certificationDate: '',
+      expirationDate: '',
+      score: ''
+    }
+  };
+
+  isDisabled: boolean = true;
+  isExpirationDateValid: boolean = true; // Cờ để kiểm tra ngày hết hạn lớn hơn ngày hiệu lực
+  isEditMode: boolean = false; // Cờ để kiểm tra có phải chế độ edit không
+  passwordsMatch: boolean = true;   //check password nhập lại
+
+  departments: Department[] = [];
+  certifications: Certification[] = [];
+  // Thêm cấu hình datepicker
+  bsConfig: Partial<BsDatepickerConfig>;
+
+
+
+
+  constructor(
+    private departmentService: DepartmentService,
+    private certificationService: CertificationService,
+    private employeeService: EmployeeService,
+    private router: Router
+  ) {
+    // Cấu hình định dạng ngày theo yêu cầu
+    this.bsConfig = {
+      dateInputFormat: 'YYYY/MM/DD',
+      containerClass: 'theme-default',
+    };
+  }
+
+  ngOnInit(): void {
+    this.getDepartments();
+    this.getCertifications();
+
+
+
+
+    // Kiểm tra xem có employeeId trong sessionStorage không
+    const employeeId = sessionStorage.getItem('employeeId');
+    if (employeeId) {
+      this.isEditMode = true; // Đang ở chế độ chỉnh sửa
+      this.loadEmployeeDetail(employeeId); // Gọi API lấy thông tin nhân viên
+    } else {
+      this.isEditMode = false; // Đang ở chế độ thêm mới
+    }
+
+    // Kiểm tra xem có dữ liệu nào đã lưu trong sessionStorage hay không
+    const storedData = sessionStorage.getItem('formData');
+    if (storedData) {
+      // Nếu có dữ liệu, load vào form
+      this.formData = JSON.parse(storedData);
+    }
+  }
+
+  checkPasswordsMatch(): void {
+    this.passwordsMatch = this.formData.employeeLoginPassword === this.formData.confirmPassword;
+  }
+
+  // Hàm lấy thông tin chi tiết nhân viên từ API
+  loadEmployeeDetail(employeeId: string): void {
+    this.employeeService.getEmployeeDetail(employeeId).subscribe({
+      next: (response) => {
+        if (response.code === '200 OK') {
+          this.formData = {
+            employeeLoginId: response.employeeLoginId,
+            departmentId: response.departmentId,
+            employeeName: response.employeeName,
+            employeeNameKaTa: response.employeeNameKana,
+            employeeBirthDate: response.employeeBirthDate,
+            employeeEmail: response.employeeEmail,
+            employeeTelephone: response.employeeTelephone,
+            employeeLoginPassword: '',  // Mật khẩu để trống
+            confirmPassword: '',         // Mật khẩu xác nhận để trống
+            certifications: {
+              certificationId: response.certifications[0]?.certificationId || '',
+              certificationDate: response.certifications[0]?.certificationDate || '',
+              expirationDate: response.certifications[0]?.expirationDate || '',
+              score: response.certifications[0]?.score || ''
+            }
+          };
+          console.log('Dữ liệu nhân viên đã được load:', response);
+        } else {
+          console.error('Dữ liệu nhân viên không tồn tại hoặc có lỗi.');
+          this.router.navigate(['**']);
+        }
+      },
+      error: (error) => {
+        console.error('Lỗi khi gọi API lấy thông tin nhân viên:', error);
+        this.router.navigate(['**']);
+
+      }
+    });
+  }
+
+  // Hàm lấy danh sách phòng ban từ server
+  getDepartments(): void {
+    this.departmentService.getDepartments().subscribe({
+      next: (response) => {
+        this.departments = response.departments;  // Gán danh sách phòng ban vào biến departments
+      },
+      error: (error) => {
+        console.error('Error fetching departments', error);  // In lỗi ra console
+      }
+    });
+  }
+
+  // Hàm lấy danh sách chứng chỉ từ server
+  getCertifications(): void {
+    this.certificationService.getCertifications().subscribe({
+      next: (response) => {
+        this.certifications = response.certifications;  // Gán danh sách chứng chỉ vào biến certifications
+      },
+      error: (error) => {
+        console.error('Error fetching certifications', error);  // In lỗi ra console
+      }
+    });
+  }
+
+  // Cập nhật trạng thái của cờ isDisabled và xóa dữ liệu khi không có chứng chỉ được chọn
+  onJapaneseLevelChange(): void {
+    // Nếu không chọn chứng chỉ, thì các input bị khóa; ngược lại, mở khóa các input
+    if (!this.formData.certifications.certificationId) {
+      this.isDisabled = true;
+
+      // Xóa dữ liệu cho các trường input
+      this.formData.certifications.certificationDate = '';
+      this.formData.certifications.expirationDate = '';
+      this.formData.certifications.score = '';
+    } else {
+      this.isDisabled = false;
+    }
+  }
+
+
+  // Khi nhấn nút xác nhận
+  onSubmit(form: NgForm): void {
+    // Kiểm tra tính hợp lệ của form và đánh dấu là đã submit
+    if (!form.valid) {
+      form.form.markAllAsTouched();  // Đánh dấu tất cả các trường đã được "chạm" để hiện thông báo lỗi
+      console.log('Form is invalid, please complete all required fields.');
+      return;  // Không cho phép submit nếu form không hợp lệ
+    }
+
+    // Kiểm tra mật khẩu xác nhận (chỉ khi không ở chế độ edit hoặc nếu có điền mật khẩu)
+    if (!this.isEditMode || (this.formData.employeeLoginPassword && this.formData.confirmPassword)) {
+      this.passwordsMatch = this.formData.employeeLoginPassword === this.formData.confirmPassword;
+      if (!this.passwordsMatch) {
+        console.log('Passwords do not match.');
+        return;
+      }
+    }
+
+
+
+    // Kiểm tra ngày hết hạn có hợp lệ không
+    this.validateExpirationDate();
+    if (!this.isExpirationDateValid) {
+      console.log('Expiration date is invalid.');
+      return;
+    }
+
+    // Lưu dữ liệu form vào sessionStorage
+    sessionStorage.setItem('formData', JSON.stringify(this.formData));
+
+    // Điều hướng đến màn hình ADM005
+    this.router.navigate(['/user/confirm']);
+  }
+
+  // Khi nhấn nút quay lại
+  onBack(): void {
+    // Điều hướng về danh sách nhân viên
+    this.router.navigate(['/user/list']);
+  }
+
+  // Kiểm tra xem ngày hết hạn có lớn hơn ngày hiệu lực không
+  validateExpirationDate(): void {
+    const certificationDate = this.formData.certifications.certificationDate;
+    const expirationDate = this.formData.certifications.expirationDate;
+
+    if (certificationDate && expirationDate) {
+      const certDateMoment = moment(certificationDate, 'YYYY-MM-DD');
+      const expDateMoment = moment(expirationDate, 'YYYY-MM-DD');
+      this.isExpirationDateValid = expDateMoment.isAfter(certDateMoment);
+    } else {
+      this.isExpirationDateValid = true; // Trường hợp nếu chưa nhập đủ ngày thì không báo lỗi
+    }
+  }
+}
+
+File: ./adm005
+
+File: ./adm005/adm005.component.css
+
+File: ./adm005/adm005.component.html
+<main>
+  <div class="container">
+    <app-header></app-header>
+
+    <div class="content">
+      <div class="content-main">
+        <div class="row">
+          <form class="c-form box-shadow">
+            <ul class="show-data">
+              <!-- Title Section -->
+              <li class="title">
+                <p>情報確認</p>
+                <p>入力された情報をＯＫボタンクリックでＤＢへ保存してください</p>
+              </li>
+              <!-- Vùng hiện thị lỗi -->
+              <li class="box-err" *ngIf="errorMessage">
+                <div class="box-err-content">{{ errorMessage }}</div>
+              </li>
+
+              <!-- Account Information Section -->
+              <li class="form-group row d-flex">
+                <label class="col-form-label col-sm-2">アカウント名</label>
+                <div class="col-sm col-sm-10">{{ formData.employeeLoginId }}</div>
+              </li>
+
+              <!-- Hiển thị tên phòng ban -->
+              <li class="form-group row d-flex">
+                <label class="col-form-label col-sm-2">グループ</label>
+                <div class="col-sm col-sm-10">{{ departmentName }}</div>
+              </li>
+
+              <li class="form-group row d-flex">
+                <label class="col-form-label col-sm-2">氏名</label>
+                <div class="col-sm col-sm-10">{{ formData.employeeName }}</div>
+              </li>
+
+              <li class="form-group row d-flex">
+                <label class="col-form-label col-sm-2">カタカナ氏名</label>
+                <div class="col-sm col-sm-10">{{ formData.employeeNameKaTa }}</div>
+              </li>
+
+              <li class="form-group row d-flex">
+                <label class="col-form-label col-sm-2">生年月日</label>
+                <div class="col-sm col-sm-10">{{ formData.employeeBirthDate | date: 'yyyy/MM/dd' }}</div>
+              </li>
+
+              <li class="form-group row d-flex">
+                <label class="col-form-label col-sm-2">メールアドレス</label>
+                <div class="col-sm col-sm-10">{{ formData.employeeEmail }}</div>
+              </li>
+
+              <li class="form-group row d-flex bor-none">
+                <label class="col-form-label col-sm-2">電話番号</label>
+                <div class="col-sm col-sm-10">{{ formData.employeeTelephone }}</div>
+              </li>
+
+              <!-- Japanese Skill Section -->
+              <li class="title mt-12"><a href="#!">日本語能力</a></li>
+
+              <!-- Hiển thị tên chứng chỉ thay vì certificationId -->
+              <li class="form-group row d-flex">
+                <label class="col-form-label col-sm-2">資格</label>
+                <div class="col-sm col-sm-10">{{ certificationName }}</div>
+              </li>
+
+              <li class="form-group row d-flex">
+                <label class="col-form-label col-sm-2">資格交付日</label>
+                <div class="col-sm col-sm-10">{{ formData.certifications.certificationDate | date: 'yyyy/MM/dd' }}</div>
+              </li>
+
+              <li class="form-group row d-flex">
+                <label class="col-form-label col-sm-2">失効日</label>
+                <div class="col-sm col-sm-10">{{ formData.certifications.expirationDate | date: 'yyyy/MM/dd' }}</div>
+              </li>
+
+              <li class="form-group row d-flex">
+                <label class="col-form-label col-sm-2">点数</label>
+                <div class="col-sm col-sm-10">{{ formData.certifications.score }}</div>
+              </li>
+
+              <!-- Buttons Section -->
+              <li class="form-group row d-flex">
+                <div class="btn-group col-sm col-sm-10 ml">
+                  <button type="button" class="btn btn-primary btn-sm" (click)="onSubmit()">OK</button>
+                  <button type="button" class="btn btn-secondary btn-sm" (click)="onBack()">戻る</button>
+                </div>
+              </li>
+            </ul>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer Section -->
+    <app-footer></app-footer>
+  </div>
+</main>
+File: ./adm005/adm005.component.spec.ts
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+
+import { Adm005Component } from './adm005.component';
+
+describe('Adm005Component', () => {
+  let component: Adm005Component;
+  let fixture: ComponentFixture<Adm005Component>;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      declarations: [ Adm005Component ]
+    })
+    .compileComponents();
+
+    fixture = TestBed.createComponent(Adm005Component);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
+});
+
+File: ./adm005/adm005.component.ts
+import { Component, OnInit } from '@angular/core';
+import { DepartmentService } from '../../../service/department.service';
+import { CertificationService } from '../../../service/certification.service';
+import { Router } from '@angular/router';
+import { EmployeeService } from 'src/app/service/employee.service';
+import { EmployeePayload } from 'src/app/models/EmployeePayload.model';
+import { DataTransferService } from '../../../service/DataTransfer.service';
+import { ERROR_MESSAGES } from '../../../../app/constants/contants';
+
+@Component({
+  selector: 'app-adm005',
+  templateUrl: './adm005.component.html',
+  styleUrls: ['./adm005.component.css']
+})
+export class Adm005Component implements OnInit {
+  formData: any;
+  departmentName: string = '';
+  certificationName: string = '';
+  errorMessage: string = ''; // Biến để lưu thông báo lỗi
+  employeeId: string | null = null; // ID nhân viên từ sessionStorage để xác định chế độ edit
+
+  constructor(
+    private departmentService: DepartmentService,
+    private certificationService: CertificationService,
+    private employeeService: EmployeeService,
+    private dataTransferService: DataTransferService,
+    private router: Router
+  ) { }
+
+  ngOnInit(): void {
+    // Lấy dữ liệu từ sessionStorage
+    const storedData = sessionStorage.getItem('formData');
+    this.employeeId = sessionStorage.getItem('employeeId'); // Lấy employeeId từ sessionStorage
+
+    if (storedData) {
+      this.formData = JSON.parse(storedData);
+
+      // Gọi API lấy danh sách phòng ban và chứng chỉ
+      this.getDepartmentName();
+      this.getCertificationName();
+    } else {
+      console.warn('Không tìm thấy dữ liệu trong sessionStorage.');
+    }
+  }
+
+  // Xử lý thêm hoặc chỉnh sửa nhân viên và điều hướng đến trang thành công
+  onSubmit(): void {
+    // Kiểm tra nếu nhân viên không có chứng chỉ, thì gửi lên dữ liệu rỗng cho các trường liên quan đến chứng chỉ
+    if (!this.formData.certifications.certificationId) {
+      this.formData.certifications = {
+        certificationId: '',
+        certificationDate: '',
+        expirationDate: '',
+        score: ''
+      };
+    }
+    
+    const formatDate = (dateString: string | null | undefined): string => {
+      // Kiểm tra xem dateString có tồn tại và không rỗng
+      if (!dateString) {
+        return ''; // Trả về chuỗi rỗng nếu không có giá trị
+      }
+      
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) {
+        // Trả về chuỗi rỗng nếu dateString không hợp lệ
+        return '';
+      }
+      
+      return date.toISOString().split('T')[0]; // Chuyển thành yyyy-MM-dd
+    };
+    
+
+    // Tạo payload chứa dữ liệu nhân viên
+    const payload: EmployeePayload = {
+      employeeLoginId: this.formData.employeeLoginId,
+      // Chỉ thêm employeeLoginPassword nếu người dùng nhập
+      ...(this.formData.employeeLoginPassword && { employeeLoginPassword: this.formData.employeeLoginPassword }),
+      employeeName: this.formData.employeeName,
+      employeeNameKana: this.formData.employeeNameKaTa,
+      employeeBirthDate: formatDate(this.formData.employeeBirthDate),
+      employeeEmail: this.formData.employeeEmail,
+      employeeTelephone: this.formData.employeeTelephone,
+      departmentId: this.formData.departmentId ? this.formData.departmentId.toString() : '',
+      certifications: [
+        {
+          certificationId: this.formData.certifications.certificationId ? this.formData.certifications.certificationId.toString() : '',
+          certificationDate: formatDate(this.formData.certifications.certificationDate),
+          expirationDate: formatDate(this.formData.certifications.expirationDate),
+          score: this.formData.certifications.score
+        }
+      ]
+    };
+  
+    // In ra console để kiểm tra payload gửi lên API
+    console.log('Payload gửi lên API:', payload);
+  
+    // Kiểm tra nếu đang ở chế độ edit (tồn tại employeeId)
+    if (this.employeeId) {
+      this.employeeService.editEmployee(this.employeeId, payload).subscribe({
+        next: (response) => {
+          if (response.code === 200 && response.message && response.message.code) {
+            this.dataTransferService.setMessageCode(response.message.code);
+            this.router.navigate(['/user/message-success']);
+          }
+        },
+        error: (error) => {
+          this.handleError(error);
+        }
+      });
+    } else {
+      // Trường hợp thêm mới nhân viên
+      this.employeeService.addEmployee(payload).subscribe({
+        next: (response) => {
+          if (response.code === 200 && response.message && response.message.code) {
+            this.dataTransferService.setMessageCode(response.message.code);
+            this.router.navigate(['/user/message-success']);
+          }
+        },
+        error: (error) => {
+          this.handleError(error);
+        }
+      });
+    }
+  }
+  
+  // Hàm xử lý lỗi
+  private handleError(error: any): void {
+    if (error.status === 500 && error.error && error.error.message && error.error.message.code) {
+      if (error.error.message.code === 'ER003') {
+        this.errorMessage = ERROR_MESSAGES.ACCOUNT_EXISTS;// Hiển thị lỗi account đã tồn tại
+      } else {
+        this.errorMessage = ERROR_MESSAGES.GENERAL_ERROR;
+      }
+    } else {
+      this.errorMessage = ERROR_MESSAGES.UNKNOWN_ERROR;
+    }
+    console.error('Lỗi:', error);
+  }
+  
+
+  // Gọi API để chỉnh sửa nhân viên
+  updateEmployee(payload: EmployeePayload): void {
+    // Gọi API editEmployee với employeeId và payload
+    this.employeeService.editEmployee(this.employeeId!, payload).subscribe({
+      next: (response) => {
+        if (response.code === 200 && response.message && response.message.code) {
+          // Lưu messageCode vào DataTransferService
+          this.dataTransferService.setMessageCode(response.message.code);
+          // Điều hướng đến ADM006
+          this.router.navigate(['/user/message-success']);
+        }
+      },
+      error: (error) => {
+        if (error.status === 500 && error.error && error.error.message && error.error.message.code) {
+          // Hiển thị thông báo lỗi từ API
+          if (error.error.message.code === 'ER003') {
+            this.errorMessage = ERROR_MESSAGES.ACCOUNT_EXISTS; 
+          } else {
+            this.errorMessage = ERROR_MESSAGES.GENERAL_ERROR;
+          }
+        } else {
+          // Lỗi không xác định
+          this.errorMessage = ERROR_MESSAGES.UNKNOWN_ERROR;
+        }
+        console.error('Lỗi khi cập nhật nhân viên:', error);
+      }
+    });
+  }
+
+  // Gọi API để thêm nhân viên mới
+  addEmployee(payload: EmployeePayload): void {
+    this.employeeService.addEmployee(payload).subscribe({
+      next: (response) => {
+        if (response.code === 200 && response.message && response.message.code) {
+          // Lưu messageCode vào DataTransferService
+          this.dataTransferService.setMessageCode(response.message.code);
+          // Điều hướng đến ADM006
+          this.router.navigate(['/user/message-success']);
+        }
+      },
+      error: (error) => {
+        if (error.status === 500 && error.error && error.error.message && error.error.message.code) {
+          // Hiển thị thông báo lỗi từ API
+          if (error.error.message.code === 'ER003') {
+            this.errorMessage = ERROR_MESSAGES.ACCOUNT_EXISTS;
+          } else {
+            this.errorMessage = ERROR_MESSAGES.GENERAL_ERROR;
+          }
+        } else {
+          // Lỗi không xác định
+          this.errorMessage = ERROR_MESSAGES.UNKNOWN_ERROR;
+        }
+        console.error('Lỗi khi thêm nhân viên:', error);
+      }
+    });
+  }
+
+  // Hàm gọi API để lấy tên phòng ban
+  getDepartmentName(): void {
+    if (this.formData.departmentId) {
+      this.departmentService.getDepartments().subscribe({
+        next: (response) => {
+          const department = response.departments.find((dept: any) => dept.departmentId === Number(this.formData.departmentId));
+          this.departmentName = department ? department.departmentName : 'Không tìm thấy phòng ban';
+        },
+        error: (error) => {
+          console.error('Error fetching department name', error);
+        }
+      });
+    }
+  }
+
+  // Gọi API để lấy tên chứng chỉ từ certificationId
+  getCertificationName(): void {
+    if (this.formData.certifications.certificationId) {
+      this.certificationService.getCertifications().subscribe({
+        next: (response) => {
+          const certification = response.certifications.find((cert: any) => cert.certificationId === Number(this.formData.certifications.certificationId));
+          this.certificationName = certification ? certification.certificationName : 'Không tìm thấy chứng chỉ';
+        },
+        error: (error) => {
+          console.error('Error fetching certification name', error);
+        }
+      });
+    }
+  }
+
+  // Hàm quay lại trang trước
+  onBack(): void {
+    window.history.back();
+  }
+}
+
+File: ./adm006
+
+File: ./adm006/adm006.component.css
+
+File: ./adm006/adm006.component.html
+<main>
+  <div class="container">
+    <app-header></app-header> 
+    <div class="content">
+      <div class="content-main">
+        <div class="notification-box">
+          <h1 class="title">{{ message }}</h1>
+          <button type="button" class="btn btn-primary btn-sm" (click)="onOK()">OK</button>
+        </div>
+      </div>
+    </div>
+    <app-footer></app-footer>
+  </div>
+</main>
+
+File: ./adm006/adm006.component.spec.ts
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+
+import { Adm006Component } from './adm006.component';
+
+describe('Adm006Component', () => {
+  let component: Adm006Component;
+  let fixture: ComponentFixture<Adm006Component>;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      declarations: [ Adm006Component ]
+    })
+    .compileComponents();
+
+    fixture = TestBed.createComponent(Adm006Component);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
+});
+
+File: ./adm006/adm006.component.ts
+import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
+import { DataTransferService } from '../../../service/DataTransfer.service';
+
+@Component({
+  selector: 'app-adm006',
+  templateUrl: './adm006.component.html',
+  styleUrls: ['./adm006.component.css']
+})
+export class Adm006Component implements OnInit {
+  message: string = '';
+
+  constructor(
+    private router: Router,
+    private dataTransferService: DataTransferService
+  ) {}
+
+  ngOnInit(): void {
+    // Lấy messageCode từ DataTransferService
+    const messageCode = this.dataTransferService.getMessageCode();
+    if (messageCode) {
+      this.setMessage(messageCode);
+      // Xóa messageCode để tránh lỗi khi reload
+      this.dataTransferService.clearMessageCode();
+    } else {
+      this.message = '操作が完了しました。';
+    }
+  }
+
+  setMessage(messageCode: string): void {
+    switch (messageCode) {
+      case 'MSG001':
+        this.message = 'ユーザの登録が完了しました。'; // Thêm mới thành công
+        break;
+      case 'MSG002':
+        this.message = 'ユーザの更新が完了しました。'; // Cập nhật thành công
+        break;
+      case 'MSG003':
+        this.message = 'ユーザの削除が完了しました。'; // Xóa thành công
+        break;
+      default:
+        this.message = '操作が完了しました。'; // Thông báo mặc định
+    }
+  }
+
+  onOK(): void {
+    this.router.navigate(['/user/list']); // Điều hướng về màn hình ADM002
+  }
+}
+
+File: ./infoProject.txt
+
+File: ./list
+
+File: ./list/user-list.component.css
+a.active {
+    text-decoration: underline;
+    font-weight: bold;
+  }
+  
+File: ./list/user-list.component.html
+<main>
+  <div class="container">
+    <app-header></app-header>
+    <div class="content">
+      <div class="content-main">
+        <div class="search-memb">
+          <h1 class="title">会員名称で会員を検索します。検索条件無しの場合は全て表示されます。</h1>
+          <form class="c-form">
+            <ul class="d-flex">
+              <li class="form-group row">
+                <label class="col-form-label">氏名:</label>
+                <div class="col-sm">
+                  <input title="fullname" type="text" [(ngModel)]="employeeName" name="employeeName" maxlength="125" />
+                </div>
+              </li>
+              <li class="form-group row">
+                <label class="col-form-label">グループ:</label>
+                <div class="col-sm">
+                  <select title="select department" [(ngModel)]="departmentId" name="departmentId">
+                    <option value="">全て</option>
+                    <option *ngFor="let department of departments" [value]="department.departmentId">
+                      {{ department.departmentName }}
+                    </option>
+                  </select>
+                </div>
+              </li>
+              <li class="form-group row">
+                <div class="btn-group">
+                  <button type="button" class="btn btn-primary btn-sm" (click)="onSearch()">検索</button>
+                  <button type="button" class="btn btn-secondary btn-sm" (click)="onCreateNew()">新規追加</button>
+                </div>
+              </li>
+            </ul>
+          </form>
+        </div>
+
+        <div *ngIf="errorMessage" class="text-danger">{{ errorMessage }}</div>
+
+        <div class="row row-table" *ngIf="employees.length > 0">
+          <div class="css-grid-table box-shadow">
+            <div class="css-grid-table-header">
+              <!-- Click vào ID thì view chi tiết theo ID đó  -->
+              <div>ID</div>
+              <div (click)="onSort('employeeName')">氏名
+                <span *ngIf="sortEmployeeName === 'asc'">▲▽</span>
+                <span *ngIf="sortEmployeeName === 'desc'">▼△</span>
+              </div>
+              <div>生年月日</div>
+              <div>グループ</div>
+              <div>メールアドレス</div>
+              <div>電話番号</div>
+              <div (click)="onSort('certificationName')">日本語能力
+                <span *ngIf="sortCertificationName === 'asc'">▲▽</span>
+                <span *ngIf="sortCertificationName === 'desc'">▼△</span>
+              </div>
+              <div (click)="onSort('endDate')">失効日
+                <span *ngIf="sortEndDate === 'asc'">▲▽</span>
+                <span *ngIf="sortEndDate === 'desc'">▼△</span>
+              </div>
+              <div>点数</div>
+            </div>
+
+
+
+            <div class="css-grid-table-body" *ngFor="let employee of employees">
+              <div (click)="viewEmployeeDetail(employee.employeeId)" style="cursor: pointer; color: rgb(0, 0, 0);">{{ employee.employeeId }}</div>
+              <div>{{ employee.employeeName }}</div>
+              <div>{{ employee.employeeBirthDate | date: 'yyyy/MM/dd' }}</div>
+              <div>{{ employee.departmentName }}</div>
+              <div>{{ employee.employeeEmail }}</div>
+              <div>{{ employee.employeeTelephone }}</div>
+              <div>{{ employee.certificationName }}</div>
+              <div>{{ employee.endDate | date: 'yyyy/MM/dd' }}</div>
+              <div>{{ employee.score }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hiển thị nếu danh sách nhân viên rỗng -->
+        <div *ngIf="employees.length === 0" class="text-danger">検索条件に該当するユーザが見つかりません。</div>
+
+        <div class="pagin" *ngIf="totalPages > 1">
+          <!-- Nút trang trước -->
+          <button title="PreviousPage" class="btn btn-sm btn-pre btn-falcon-default" type="button" [disabled]="currentPage === 1"
+            (click)="goToPreviousPage()">
+            <svg class="svg-inline--fa fa-chevron-left fa-w-10" aria-hidden="true" focusable="false" data-prefix="fas"
+              data-icon="chevron-left" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512">
+              <path fill="currentColor"
+                d="M34.52 239.03L228.87 44.69c9.37-9.37 24.57-9.37 33.94 0l22.67 22.67c9.36 9.36 9.37 24.52.04 33.9L131.49 256l154.02 154.75c9.34 9.38 9.32 24.54-.04 33.9l-22.67 22.67c-9.37 9.37-24.57 9.37-33.94 0L34.52 272.97c-9.37-9.37-9.37-24.57 0-33.94z">
+              </path>
+            </svg>
+          </button>
+
+          <!-- Hiển thị các số trang -->
+          <span *ngFor="let page of totalPagesArray">
+            <a class="btn btn-sm text-primary btn-falcon-default" href="#!" [class.active]="currentPage === page"
+              *ngIf="page !== -1" (click)="goToPage(page)">
+              {{ page }}
+            </a>
+            <span class="ellipsis" *ngIf="page === -1">…</span>
+          </span>
+
+          <!-- Nút trang tiếp theo -->
+          <button title="nextpage" class="btn btn-sm btn-next btn-falcon-default" type="button" [disabled]="currentPage === totalPages"
+            (click)="goToNextPage()">
+            <svg class="svg-inline--fa fa-chevron-right fa-w-10" aria-hidden="true" focusable="false" data-prefix="fas"
+              data-icon="chevron-right" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512">
+              <path fill="currentColor"
+                d="M285.48 272.97L91.13 467.31c-9.37 9.37-24.57 9.37-33.94 0l-22.67-22.67c-9.36-9.36-9.37-24.52-.04-33.9L188.5 256 34.48 101.25c-9.34-9.38-9.32-24.54-.04-33.9l22.67-22.67c9.37-9.37 24.57-9.37 33.94 0L285.48 239.03c9.37 9.37 9.37 24.57 0 33.94z">
+              </path>
+            </svg>
+          </button>
+        </div>
+
+
+
+
+
+      </div>
+    </div>
+    <app-footer></app-footer>
+  </div>
+</main>
+File: ./list/user-list.component.spec.ts
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+
+import { UserListComponent } from './user-list.component';
+
+describe('UserListComponent', () => {
+  let component: UserListComponent;
+  let fixture: ComponentFixture<UserListComponent>;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      declarations: [ UserListComponent ]
+    })
+    .compileComponents();
+
+    fixture = TestBed.createComponent(UserListComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
+});
+
+File: ./list/user-list.component.ts
+import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
+import { EmployeeService } from '../../../service/employee.service';
+import { DepartmentService } from '../../../service/department.service';
+import { Employee } from '../../../models/employee.model';
+import { Department } from '../../../models/department.model';
+import { DataTransferService } from '../../../service/DataTransfer.service';
+
+@Component({
+  selector: 'app-user-list',
+  templateUrl: './user-list.component.html',
+  styleUrls: ['./user-list.component.css']
+})
+export class UserListComponent implements OnInit {
+  employees: Employee[] = [];
+  departments: Department[] = [];
+  employeeName: string = '';
+  departmentId: string = '';
+  currentPage: number = 1;  // Trang hiện tại
+  totalPages: number = 1;
+  limit: number = 5;
+  totalRecords: number = 0;
+  errorMessage: string = '';
+
+  sortEmployeeName: string = 'asc';
+  sortCertificationName: string = 'asc';
+  sortEndDate: string = 'asc';
+
+  constructor(
+    private employeeService: EmployeeService,
+    private departmentService: DepartmentService,
+    private dataTransferService: DataTransferService, // Inject Service
+    private router: Router
+  ) {}
+
+  ngOnInit(): void {
+    this.getDepartments();
+    this.getEmployees();  // Load dữ liệu lần đầu tiên
+  }
+
+  // Lấy danh sách phòng ban
+  getDepartments(): void {
+    this.departmentService.getDepartments().subscribe({
+      next: (response) => {
+        if (response && response.departments) {
+          this.departments = response.departments;
+        }
+      },
+      error: (error) => {
+        this.errorMessage = '部門を取得できません';
+        console.error('Error fetching departments:', error);
+      }
+    });
+  }
+
+  // Lấy danh sách nhân viên (employees)
+  getEmployees(): void {
+    const offset = (this.currentPage - 1) * this.limit;  // Tính toán offset dựa trên trang hiện tại
+    console.log('Fetching employees for page:', this.currentPage);
+    console.log('Offset:', offset, 'Limit:', this.limit);  // Hiển thị offset và limit
+    
+
+    
+    this.employeeService.getEmployees(
+      this.limit, offset, this.employeeName, this.departmentId, 
+      this.sortEmployeeName, this.sortCertificationName, this.sortEndDate
+    ).subscribe({
+      next: (response) => {
+        if (response && response.employees) {
+          console.log('Employees data:', response.employees);  // Kiểm tra dữ liệu nhận được từ API
+          this.employees = response.employees;
+          this.totalRecords = response.totalRecords;
+          this.totalPages = Math.ceil(this.totalRecords / this.limit);  // Tính toán số trang
+          console.log('Total pages:', this.totalPages);  // Hiển thị tổng số trang
+        } else {
+          this.employees = [];
+          this.totalPages = 1;
+          this.currentPage = 1;
+          console.log('No employees found.');
+        }
+      },
+      error: (error) => {
+        console.error('Error fetching employees:', error);
+      }
+    });
+  }
+  
+
+  // Khi người dùng nhấn nút tìm kiếm
+  onSearch(): void {
+    if (this.employeeName.length > 125) {
+      alert('氏名は125文字以内で入力してください。');
+      return;
+    }
+    this.currentPage = 1;  // Reset về trang 1
+    this.getEmployees();   // Gọi lại API
+  }
+
+  // Khi nhấn nút tạo mới
+  onCreateNew(): void {
+     // Xóa toàn bộ dữ liệu trong sessionStorage
+  sessionStorage.removeItem('employeeId'); 
+
+    //xóa session
+    this.router.navigate(['/user/add']);
+    sessionStorage.removeItem('formData');
+  }
+
+  // Phương thức để lưu ID vào service và điều hướng đến màn hình ADM003
+viewEmployeeDetail(employeeId: string): void {
+  this.dataTransferService.setEmployeeId(employeeId);
+  this.router.navigate(['/user/detail']);
+}
+
+  // Khi nhấn vào cột để sắp xếp (sort)
+  onSort(column: string): void {
+    // Reset trang hiện tại về 1 khi sort
+    this.currentPage = 1;
+  
+    // Kiểm tra cột nào được click và đảo ngược trạng thái sort của cột đó
+    if (column === 'employeeName') {
+      this.sortEmployeeName = this.sortEmployeeName === 'asc' ? 'desc' : 'asc';
+    } else if (column === 'certificationName') {
+      this.sortCertificationName = this.sortCertificationName === 'asc' ? 'desc' : 'asc';
+    } else if (column === 'endDate') {
+      this.sortEndDate = this.sortEndDate === 'asc' ? 'desc' : 'asc';
+    }
+  
+    // Gọi lại API để lấy danh sách employees theo trạng thái sort mới
+    this.getEmployees();
+  }
+  
+
+  // Chuyển đến trang trước đó
+  goToPreviousPage(): void {
+    if (this.currentPage > 1) {
+      this.currentPage--;  // Giảm số trang hiện tại
+      this.getEmployees();  // Gọi API để lấy dữ liệu trang mới
+    }
+  }
+
+  // Chuyển đến trang tiếp theo
+  goToNextPage(): void {
+    if (this.currentPage < this.totalPages) {
+      this.currentPage++;  // Tăng số trang hiện tại
+      this.getEmployees();  // Gọi API để lấy dữ liệu trang mới
+    }
+  }
+
+  goToPage(page: number): void {
+    console.log('Attempting to navigate to page:', page);  // Kiểm tra xem bạn đang nhấn trang nào
+    if (page >= 1 && page <= this.totalPages && page !== this.currentPage) {
+      this.currentPage = page;
+      console.log('Navigating to page:', this.currentPage);  // Xác nhận trang hiện tại sau khi cập nhật
+      this.getEmployees();  // Gọi lại API với offset dựa trên currentPage
+    }
+  }
+  
+
+  // Hàm để tính tổng số trang hiển thị
+  get totalPagesArray(): number[] {
+    const range: number[] = [];
+    const total = this.totalPages;
+
+    if (total <= 5) {
+      // Hiển thị tất cả các trang nếu tổng số trang <= 5
+      for (let i = 1; i <= total; i++) {
+        range.push(i);
+      }
+    } else {
+      // Hiển thị trang đầu tiên, trang hiện tại, và các trang gần trang hiện tại, cùng với dấu "..."
+      range.push(1);
+      if (this.currentPage > 3) {
+        range.push(-1);  // Đại diện cho "..."
+      }
+      
+      const start = Math.max(2, this.currentPage - 1);
+      const end = Math.min(total - 1, this.currentPage + 1);
+      
+      for (let i = start; i <= end; i++) {
+        range.push(i);
+      }
+      
+      if (this.currentPage < total - 2) {
+        range.push(-1);  // Đại diện cho "..."
+      }
+      range.push(total);
+    }
+    return range;
+  }
+}
+
+File: ./users.module.ts
+import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { UsersRoutingModule } from './users-routing.module';
+import { UserListComponent } from './list/user-list.component';
+import { SharedModule } from 'src/app/shared/shared.module';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { BsDatepickerModule } from 'ngx-bootstrap/datepicker';
+import { Adm004Component } from './adm004/adm004.component';
+import { Adm005Component } from './adm005/adm005.component';
+import { DepartmentService } from '../../../app/service/department.service';
+import { CertificationService } from '../../../app/service/certification.service';
+import { EmployeeService } from 'src/app/service/employee.service';
+import { HttpClientModule } from '@angular/common/http';
+import { Adm006Component } from './adm006/adm006.component';
+import { Adm003Component } from './adm003/adm003.component'; 
+
+
+@NgModule({
+  declarations: [
+    UserListComponent,
+    Adm004Component,
+    Adm005Component,
+    Adm006Component,
+    Adm003Component,
+  ],
+  imports: [
+    BrowserAnimationsModule,
+    BsDatepickerModule.forRoot(),
+    CommonModule,
+    SharedModule,
+    UsersRoutingModule,
+    FormsModule,
+    HttpClientModule 
+  ],
+  providers: [DepartmentService, CertificationService, EmployeeService]
+})
+export class UsersModule { }
+
+File: ./users-routing.module.ts
+import { NgModule } from '@angular/core';
+import { RouterModule, Routes } from '@angular/router';
+import { SystemErrorComponent } from 'src/app/shared/component/error/system-error.component';
+import { UserListComponent } from './list/user-list.component';
+import { AuthorizeGuard } from '../../shared/auth/authorize.guard';
+import { Adm004Component } from './adm004/adm004.component';
+import { Adm005Component } from './adm005/adm005.component';
+import { Adm006Component } from './adm006/adm006.component';
+import { Adm003Component } from './adm003/adm003.component';
+
+const routes: Routes = [
+  { path: 'user', redirectTo: 'user/list', pathMatch: 'full' },
+  { path: 'user/list', component: UserListComponent, canActivate: [AuthorizeGuard] },
+  { path: 'user/detail', component: Adm003Component, canActivate: [AuthorizeGuard] }, 
+  { path: 'user/add', component: Adm004Component, canActivate: [AuthorizeGuard] },
+  { path: 'user/confirm', component:Adm005Component, canActivate: [AuthorizeGuard] },
+  {path: 'user/message-success', component:Adm006Component, canActivate: [AuthorizeGuard]},
+  { path: '**', component: SystemErrorComponent },
+];
+
+@NgModule({
+  imports: [RouterModule.forChild(routes)],
+  exports: [RouterModule]
+})
+export class UsersRoutingModule { }
+
+File: 5 directories, 23 files

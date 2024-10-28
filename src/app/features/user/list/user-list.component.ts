@@ -31,7 +31,7 @@ export class UserListComponent implements OnInit {
     private departmentService: DepartmentService,
     private dataTransferService: DataTransferService, // Inject Service
     private router: Router
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.getDepartments();
@@ -58,11 +58,11 @@ export class UserListComponent implements OnInit {
     const offset = (this.currentPage - 1) * this.limit;  // Tính toán offset dựa trên trang hiện tại
     console.log('Fetching employees for page:', this.currentPage);
     console.log('Offset:', offset, 'Limit:', this.limit);  // Hiển thị offset và limit
-    
 
-    
+
+
     this.employeeService.getEmployees(
-      this.limit, offset, this.employeeName, this.departmentId, 
+      this.limit, offset, this.employeeName, this.departmentId,
       this.sortEmployeeName, this.sortCertificationName, this.sortEndDate
     ).subscribe({
       next: (response) => {
@@ -84,7 +84,7 @@ export class UserListComponent implements OnInit {
       }
     });
   }
-  
+
 
   // Khi người dùng nhấn nút tìm kiếm
   onSearch(): void {
@@ -98,25 +98,24 @@ export class UserListComponent implements OnInit {
 
   // Khi nhấn nút tạo mới
   onCreateNew(): void {
-     // Xóa toàn bộ dữ liệu trong sessionStorage
-  sessionStorage.removeItem('employeeId'); 
+    // Xóa toàn bộ dữ liệu trong sessionStorage
+    sessionStorage.removeItem('employeeId');
 
     //xóa session
     this.router.navigate(['/user/add']);
     sessionStorage.removeItem('formData');
   }
+  // Hàm chuyển đến trang chi tiết nhân viên
+  viewEmployeeDetail(employeeId: string): void {
+    this.router.navigate(['/user/detail'], { state: { employeeId: employeeId } });
+  }
 
-  // Phương thức để lưu ID vào service và điều hướng đến màn hình ADM003
-viewEmployeeDetail(employeeId: string): void {
-  this.dataTransferService.setEmployeeId(employeeId);
-  this.router.navigate(['/user/detail']);
-}
 
   // Khi nhấn vào cột để sắp xếp (sort)
   onSort(column: string): void {
     // Reset trang hiện tại về 1 khi sort
     this.currentPage = 1;
-  
+
     // Kiểm tra cột nào được click và đảo ngược trạng thái sort của cột đó
     if (column === 'employeeName') {
       this.sortEmployeeName = this.sortEmployeeName === 'asc' ? 'desc' : 'asc';
@@ -125,11 +124,11 @@ viewEmployeeDetail(employeeId: string): void {
     } else if (column === 'endDate') {
       this.sortEndDate = this.sortEndDate === 'asc' ? 'desc' : 'asc';
     }
-  
+
     // Gọi lại API để lấy danh sách employees theo trạng thái sort mới
     this.getEmployees();
   }
-  
+
 
   // Chuyển đến trang trước đó
   goToPreviousPage(): void {
@@ -155,7 +154,7 @@ viewEmployeeDetail(employeeId: string): void {
       this.getEmployees();  // Gọi lại API với offset dựa trên currentPage
     }
   }
-  
+
 
   // Hàm để tính tổng số trang hiển thị
   get totalPagesArray(): number[] {
@@ -173,14 +172,14 @@ viewEmployeeDetail(employeeId: string): void {
       if (this.currentPage > 3) {
         range.push(-1);  // Đại diện cho "..."
       }
-      
+
       const start = Math.max(2, this.currentPage - 1);
       const end = Math.min(total - 1, this.currentPage + 1);
-      
+
       for (let i = start; i <= end; i++) {
         range.push(i);
       }
-      
+
       if (this.currentPage < total - 2) {
         range.push(-1);  // Đại diện cho "..."
       }

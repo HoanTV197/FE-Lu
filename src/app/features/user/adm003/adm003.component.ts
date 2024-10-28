@@ -19,33 +19,33 @@ export class Adm003Component implements OnInit {
     private route: ActivatedRoute,
     private dataTransferService: DataTransferService,
     private router: Router
-  ) {}
+  ) {
+     // Lấy employeeId từ state
+     const navigation = this.router.getCurrentNavigation();
+     if (navigation?.extras.state && navigation.extras.state['employeeId']) {
+       this.employeeId = navigation.extras.state['employeeId'];
+       if (this.employeeId) {
+         sessionStorage.setItem('employeeId', this.employeeId); // Dự phòng khi reload
+       }
+     }
+  }
 
 
   ngOnInit(): void {
-    // Lấy employeeId từ service
-    this.employeeId = this.dataTransferService.getEmployeeId();
+    if (!this.employeeId) {
+      // Nếu không có ID từ state, thử lấy từ sessionStorage
+      this.employeeId = sessionStorage.getItem('employeeId');
+    }
 
     if (this.employeeId) {
-      // Lưu ID vào sessionStorage để phòng trường hợp reload lại trang
-      sessionStorage.setItem('employeeId', this.employeeId);
-      // Gọi API để lấy chi tiết nhân viên
       this.getEmployeeDetail(this.employeeId);
     } else {
-      // Nếu không có ID từ service, thử lấy từ sessionStorage
-      this.employeeId = sessionStorage.getItem('employeeId');
-      if (this.employeeId) {
-        console.log("Retrieved employeeId from sessionStorage:", this.employeeId);
-        // Gọi API để lấy chi tiết nhân viên
-        this.getEmployeeDetail(this.employeeId);
-      } else {
-        // Không có ID, chuyển về trang system error hoặc thông báo lỗi
-        this.errorMessage = 'Không tìm thấy ID nhân viên.';
-        this.router.navigate(['**']);
-        console.error('Không tìm thấy ID nhân viên.');
-      }
+      // Không có ID, điều hướng đến trang lỗi
+      this.errorMessage = 'Không tìm thấy ID nhân viên.';
+      this.router.navigate(['**']);
     }
   }
+
 
     /**
      * Hàm gọi API để lấy chi tiết nhân viên
@@ -98,8 +98,8 @@ export class Adm003Component implements OnInit {
   // Hàm điều hướng tới màn hình edit adm004
   goToEditPage(): void {
     if (this.employeeId) {
-      // Lưu ID vào DataTransferService để truyền sang màn hình adm004
-      this.dataTransferService.setEmployeeId(this.employeeId);
+      // Lưu employeeId vào sessionStorage
+      sessionStorage.setItem('employeeId', this.employeeId);
       // Điều hướng tới màn hình adm004
       this.router.navigate(['/user/add']);
     }
